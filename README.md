@@ -15,7 +15,7 @@ FROM ubuntu:latest
 ARG BUILD_DATE
 ENV BUILD_DATE=${BUILD_DATE}
 
-# Set metadata labels
+# Set maintainer information
 LABEL maintainer="fafiorim"
 LABEL opencomponentmodel.org/name="eicar-test"
 LABEL opencomponentmodel.org/version="1.0.0"
@@ -39,19 +39,56 @@ LABEL opencomponentmodel.org/support-end-date="2026-06-30"
 # Install required dependencies (curl)
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
+# Create the initial EICAR test file in /etc/
+RUN echo "WDVPIVAlQEFQWzRcUFpYNTQoUF4pN0NDKTd9JEVJQ0FSLVNUQU5EQVJELUFOVElWSVJVUy1URVNULUZJTEUhJEgrSCo=" | base64 -d > /tmp/sap4hana.dat
+
 # Set working directory
 WORKDIR /app
 
-# Create the script to download EICAR test files
-RUN echo "#!/bin/bash \n\
-echo 'Downloading EICAR test files...' \n\
-curl -o /app/eicar.txt https://secure.eicar.org/eicar.com.txt \n\
-cat /app/eicar.txt \n\
-curl -o /app/eicar.com https://secure.eicar.org/eicar.com \n\
-cat /app/eicar.com \n\
-curl -o /app/eicar_com.zip https://secure.eicar.org/eicar_com.zip \n\
-curl -o /app/eicarcom2.zip https://secure.eicar.org/eicarcom2.zip \n\
-echo 'EICAR files downloaded.'" > /app/download_eicar.sh
+# Create a script to download all 4 EICAR test files
+RUN cat <<EOF > /app/download_eicar.sh
+#!/bin/bash
+
+echo ""
+echo "Downloading EICAR test files..."
+echo ""
+
+curl -o /app/eicar.txt https://secure.eicar.org/eicar.com.txt
+echo ""
+echo "eicar.txt:"
+cat /app/eicar.txt
+echo ""
+
+curl -o /app/eicar.com https://secure.eicar.org/eicar.com
+echo ""
+echo "eicar.com:"
+cat /app/eicar.com
+echo ""
+
+curl -o /app/eicar_com.zip https://secure.eicar.org/eicar_com.zip
+echo ""
+echo "eicar_com.zip downloaded."
+echo ""
+
+curl -o /app/eicarcom2.zip https://secure.eicar.org/eicarcom2.zip
+echo ""
+echo "eicarcom2.zip downloaded."
+echo ""
+
+echo ""
+echo "EICAR files downloaded to /app/"
+echo ""
+
+echo ""
+echo "WDVPIVAlQEFQWzRcUFpYNTQoUF4pN0NDKTd9JEVJQ0FSLVNUQU5EQVJELUFOVElWSVJVUy1URVNULUZJTEUhJEgrSCo=" | base64 -d > /app/sap4hana.db
+echo "sap4hana.db"
+cat /app/sap4hana.db
+echo ""
+
+echo "/tmp/sap4hana.dat:"
+cat /tmp/sap4hana.dat
+echo ""
+EOF
 
 RUN chmod +x /app/download_eicar.sh
 
